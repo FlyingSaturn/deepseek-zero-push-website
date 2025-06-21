@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zero Push Algorithm Visualizer</title>
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --accent: #4cc9f0;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --success: #4caf50;
+            --warning: #ff9800;
+            --danger: #f44336;
+            --gray: #6c757d;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--dark);
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            padding: 20px 0;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            color: var(--secondary);
+            margin-bottom: 10px;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            color: var(--gray);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 30px;
+        }
+        
+        @media (min-width: 992px) {
+            .main-content {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        
+        .control-panel {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            padding: 25px;
+        }
+        
+        .panel-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: var(--primary);
+            border-bottom: 2px solid var(--accent);
+            padding-bottom: 10px;
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        input, select, button {
+            width: 100%;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+            font-size: 1rem;
+            margin-bottom: 10px;
+        }
+        
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        button:hover {
+            background-color: var(--secondary);
+            transform: translateY(-2px);
+        }
+        
+        .array-input {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .array-input input {
+            flex: 1;
+        }
+        
+        .array-input button {
+            width: auto;
+            padding: 12px 20px;
+        }
+        
+        .algorithm-info {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            padding: 25px;
+        }
+        
+        .algorithm-card {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--primary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .algorithm-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+        
+        .algorithm-card.active {
+            border-left-color: var(--success);
+            background: #e8f5e9;
+        }
+        
+        .algorithm-card h3 {
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+        
+        .algorithm-stats {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        
+        .stat {
+            background: #e3f2fd;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            color: var(--primary);
+        }
+        
+        .visualization {
+            grid-column: 1 / -1;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            padding: 25px;
+            margin-top: 20px;
+        }
+        
+        .array-display {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 30px 0;
+        }
+        
+        .array-element {
+            width: 70px;
+            height: 70px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .non-zero {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+        
+        .zero {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
+            color: white;
+        }
+        
+        .active-element {
+            transform: scale(1.1);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            border: 3px solid var(--warning);
+        }
+        
+        .element-index {
+            font-size: 0.8rem;
+            margin-top: 5px;
+            color: var(--gray);
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .controls button {
+            width: auto;
+            padding: 10px 20px;
+        }
+        
+        .explanation {
+            background: #f0f4f8;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 30px;
+            border-left: 4px solid var(--accent);
+        }
+        
+        .explanation h3 {
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+        
+        .speed-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .complexity-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        .complexity-table th, .complexity-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .complexity-table th {
+            background-color: #f8f9fa;
+            color: var(--primary);
+        }
+        
+        .complexity-table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        
+        .complexity-table tr:hover {
+            background-color: #e9ecef;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 20px;
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+        
+        .highlight {
+            background-color: #fff9c4;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Zero Push Algorithm Visualizer</h1>
+            <p class="subtitle">Explore different approaches to move all zeros to the end of an array while maintaining the order of non-zero elements</p>
+        </header>
+        
+        <div class="main-content">
+            <div class="control-panel">
+                <h2 class="panel-title">Array Configuration</h2>
+                
+                <div class="input-group">
+                    <label for="array-input">Enter your array (comma separated):</label>
+                    <div class="array-input">
+                        <input type="text" id="array-input" value="1,0,2,0,3,0,4">
+                        <button id="random-array">Random</button>
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <label for="algorithm-select">Select Algorithm:</label>
+                    <select id="algorithm-select">
+                        <option value="two-pointer">Two-Pointer Approach (O(n))</option>
+                        <option value="snowball">Snowball Technique (O(n))</option>
+                        <option value="insertion-sort">Insertion-Sort Like (O(n²))</option>
+                        <option value="counting">Counting Non-Zeros (O(n))</option>
+                    </select>
+                </div>
+                
+                <button id="run-algorithm">Run Algorithm</button>
+                <button id="reset-visualization">Reset</button>
+                
+                <div class="speed-control">
+                    <label for="speed-slider">Animation Speed:</label>
+                    <input type="range" id="speed-slider" min="1" max="10" value="5">
+                </div>
+            </div>
+            
+            <div class="algorithm-info">
+                <h2 class="panel-title">Algorithm Information</h2>
+                
+                <div class="algorithm-card active" data-algo="two-pointer">
+                    <h3>Two-Pointer Approach</h3>
+                    <p>Uses a slow pointer to track the next position for non-zero elements. After processing, fills the remaining positions with zeros.</p>
+                    <div class="algorithm-stats">
+                        <span class="stat">Time: O(n)</span>
+                        <span class="stat">Space: O(1)</span>
+                        <span class="stat">Stable: Yes</span>
+                    </div>
+                </div>
+                
+                <div class="algorithm-card" data-algo="snowball">
+                    <h3>Snowball Technique</h3>
+                    <p>Treats zeros like a snowball that grows as they're encountered. Non-zero elements are swapped with the first zero in the snowball.</p>
+                    <div class="algorithm-stats">
+                        <span class="stat">Time: O(n)</span>
+                        <span class="stat">Space: O(1)</span>
+                        <span class="stat">Stable: Yes</span>
+                    </div>
+                </div>
+                
+                <div class="algorithm-card" data-algo="insertion-sort">
+                    <h3>Insertion-Sort Like</h3>
+                    <p>Iterates from right to left, shifting non-zeros left to make space for zeros at the end. Similar to insertion sort logic.</p>
+                    <div class="algorithm-stats">
+                        <span class="stat">Time: O(n²)</span>
+                        <span class="stat">Space: O(1)</span>
+                        <span class="stat">Stable: Yes</span>
+                    </div>
+                </div>
+                
+                <div class="algorithm-card" data-algo="counting">
+                    <h3>Counting Non-Zeros</h3>
+                    <p>Counts non-zero elements, writes them to a new array, then fills remaining positions with zeros. Simple but requires extra space.</p>
+                    <div class="algorithm-stats">
+                        <span class="stat">Time: O(n)</span>
+                        <span class="stat">Space: O(n)</span>
+                        <span class="stat">Stable: Yes</span>
+                    </div>
+                </div>
+                
+                <table class="complexity-table">
+                    <thead>
+                        <tr>
+                            <th>Algorithm</th>
+                            <th>Time</th>
+                            <th>Space</th>
+                            <th>Stable</th>
+                            <th>Best For</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Two-Pointer</td>
+                            <td>O(n)</td>
+                            <td>O(1)</td>
+                            <td>Yes</td>
+                            <td>Most cases</td>
+                        </tr>
+                        <tr>
+                            <td>Snowball</td>
+                            <td>O(n)</td>
+                            <td>O(1)</td>
+                            <td>Yes</td>
+                            <td>In-place swapping</td>
+                        </tr>
+                        <tr>
+                            <td>Insertion-Sort Like</td>
+                            <td>O(n²)</td>
+                            <td>O(1)</td>
+                            <td>Yes</td>
+                            <td>Educational purposes</td>
+                        </tr>
+                        <tr>
+                            <td>Counting</td>
+                            <td>O(n)</td>
+                            <td>O(n)</td>
+                            <td>Yes</td>
+                            <td>Simplicity</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="visualization">
+                <h2 class="panel-title">Algorithm Visualization</h2>
+                
+                <div class="array-display" id="array-display">
+                    <!-- Array elements will be generated here -->
+                </div>
+                
+                <div class="controls">
+                    <button id="prev-step">Previous Step</button>
+                    <button id="next-step">Next Step</button>
+                    <button id="play-pause">Play</button>
+                </div>
+                
+                <div class="explanation" id="explanation">
+                    <h3>Algorithm Explanation</h3>
+                    <p>Select an algorithm and click "Run Algorithm" to start the visualization. The <span class="highlight">Two-Pointer approach</span> is recommended for most cases as it provides optimal O(n) time complexity with O(1) space.</p>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Zero Push Algorithm Visualizer | Created to demonstrate different approaches to moving zeros to the end of an array</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // DOM elements
+            const arrayInput = document.getElementById('array-input');
+            const randomArrayBtn = document.getElementById('random-array');
+            const algorithmSelect = document.getElementById('algorithm-select');
+            const runAlgorithmBtn = document.getElementById('run-algorithm');
+            const resetBtn = document.getElementById('reset-visualization');
+            const arrayDisplay = document.getElementById('array-display');
+            const explanationDiv = document.getElementById('explanation');
+            const prevStepBtn = document.getElementById('prev-step');
+            const nextStepBtn = document.getElementById('next-step');
+            const playPauseBtn = document.getElementById('play-pause');
+            const speedSlider = document.getElementById('speed-slider');
+            const algorithmCards = document.querySelectorAll('.algorithm-card');
+            
+            // State variables
+            let originalArray = [];
+            let currentArray = [];
+            let currentStep = 0;
+            let totalSteps = 0;
+            let animationInterval = null;
+            let animationSpeed = 500;
+            let currentAlgorithm = 'two-pointer';
+            let steps = [];
+            
+            // Initialize with sample array
+            initializeArray();
+            
+            // Event listeners
+            randomArrayBtn.addEventListener('click', generateRandomArray);
+            runAlgorithmBtn.addEventListener('click', runAlgorithm);
+            resetBtn.addEventListener('click', resetVisualization);
+            prevStepBtn.addEventListener('click', prevStep);
+            nextStepBtn.addEventListener('click', nextStep);
+            playPauseBtn.addEventListener('click', togglePlayPause);
+            speedSlider.addEventListener('input', updateSpeed);
+            
+            algorithmCards.forEach(card => {
+                card.addEventListener('click', () => {
+                    // Update active card
+                    algorithmCards.forEach(c => c.classList.remove('active'));
+                    card.classList.add('active');
+                    
+                    // Update algorithm select
+                    const algo = card.dataset.algo;
+                    currentAlgorithm = algo;
+                    algorithmSelect.value = algo;
+                });
+            });
+            
+            algorithmSelect.addEventListener('change', function() {
+                // Update active card
+                const algo = this.value;
+                currentAlgorithm = algo;
+                algorithmCards.forEach(card => {
+                    card.classList.remove('active');
+                    if (card.dataset.algo === algo) {
+                        card.classList.add('active');
+                    }
+                });
+            });
+            
+            // Functions
+            function initializeArray() {
+                const input = arrayInput.value;
+                originalArray = input.split(',').map(Number).filter(num => !isNaN(num));
+                if (originalArray.length === 0) {
+                    originalArray = [1, 0, 2, 0, 3, 0, 4];
+                    arrayInput.value = originalArray.join(',');
+                }
+                renderArray(originalArray);
+            }
+            
+            function generateRandomArray() {
+                const length = Math.floor(Math.random() * 8) + 5; // 5-12 elements
+                const zerosCount = Math.floor(length / 3);
+                const array = [];
+                
+                for (let i = 0; i < length - zerosCount; i++) {
+                    array.push(Math.floor(Math.random() * 9) + 1); // 1-9
+                }
+                
+                for (let i = 0; i < zerosCount; i++) {
+                    array.splice(Math.floor(Math.random() * array.length), 0, 0);
+                }
+                
+                originalArray = array;
+                arrayInput.value = array.join(',');
+                renderArray(originalArray);
+            }
+            
+            function renderArray(arr, activeIndices = []) {
+                arrayDisplay.innerHTML = '';
+                
+                arr.forEach((value, index) => {
+                    const element = document.createElement('div');
+                    element.className = `array-element ${value === 0 ? 'zero' : 'non-zero'}`;
+                    
+                    if (activeIndices.includes(index)) {
+                        element.classList.add('active-element');
+                    }
+                    
+                    element.innerHTML = `
+                        <div>${value}</div>
+                        <div class="element-index">${index}</div>
+                    `;
+                    
+                    arrayDisplay.appendChild(element);
+                });
+            }
+            
+            function runAlgorithm() {
+                initializeArray();
+                currentArray = [...originalArray];
+                currentStep = 0;
+                
+                // Clear any existing interval
+                if (animationInterval) {
+                    clearInterval(animationInterval);
+                    playPauseBtn.textContent = 'Play';
+                }
+                
+                // Generate steps based on algorithm
+                switch (currentAlgorithm) {
+                    case 'two-pointer':
+                        steps = twoPointerApproach();
+                        break;
+                    case 'snowball':
+                        steps = snowballTechnique();
+                        break;
+                    case 'insertion-sort':
+                        steps = insertionSortLike();
+                        break;
+                    case 'counting':
+                        steps = countingNonZeros();
+                        break;
+                }
+                
+                totalSteps = steps.length;
+                updateVisualization();
+            }
+            
+            function resetVisualization() {
+                currentStep = 0;
+                if (animationInterval) {
+                    clearInterval(animationInterval);
+                    playPauseBtn.textContent = 'Play';
+                }
+                renderArray(originalArray);
+                explanationDiv.innerHTML = '<h3>Algorithm Explanation</h3><p>Select an algorithm and click "Run Algorithm" to start the visualization.</p>';
+            }
+            
+            function prevStep() {
+                if (currentStep > 0) {
+                    currentStep--;
+                    updateVisualization();
+                }
+            }
+            
+            function nextStep() {
+                if (currentStep < totalSteps - 1) {
+                    currentStep++;
+                    updateVisualization();
+                } else if (animationInterval) {
+                    // If at last step and playing, stop animation
+                    togglePlayPause();
+                }
+            }
+            
+            function togglePlayPause() {
+                if (animationInterval) {
+                    clearInterval(animationInterval);
+                    animationInterval = null;
+                    playPauseBtn.textContent = 'Play';
+                } else {
+                    playPauseBtn.textContent = 'Pause';
+                    animationInterval = setInterval(() => {
+                        if (currentStep < totalSteps - 1) {
+                            currentStep++;
+                            updateVisualization();
+                        } else {
+                            togglePlayPause();
+                        }
+                    }, animationSpeed);
+                }
+            }
+            
+            function updateSpeed() {
+                animationSpeed = 1100 - (speedSlider.value * 100);
+                if (animationInterval) {
+                    togglePlayPause();
+                    togglePlayPause();
+                }
+            }
+            
+            function updateVisualization() {
+                if (steps.length === 0) return;
+                
+                const step = steps[currentStep];
+                renderArray(step.array, step.activeIndices);
+                
+                explanationDiv.innerHTML = `
+                    <h3>${step.title}</h3>
+                    <p>${step.description}</p>
+                    ${step.details ? `<p><strong>Details:</strong> ${step.details}</p>` : ''}
+                    <p><strong>Step:</strong> ${currentStep + 1} of ${totalSteps}</p>
+                `;
+            }
+            
+            // Algorithm implementations (return array of steps)
+            function twoPointerApproach() {
+                const steps = [];
+                const arr = [...originalArray];
+                let lastNonZero = 0;
+                
+                // Initial step
+                steps.push({
+                    title: "Initial Setup",
+                    description: "Starting the two-pointer approach. We'll use one pointer to track the position for the next non-zero element.",
+                    details: `Array: [${arr.join(', ')}]`,
+                    array: [...arr],
+                    activeIndices: []
+                });
+                
+                // First pass: move non-zeros to the front
+                for (let i = 0; i < arr.length; i++) {
+                    steps.push({
+                        title: `Processing index ${i}`,
+                        description: `Checking element at position ${i}: ${arr[i]}`,
+                        details: arr[i] !== 0 ? 
+                            `Moving this non-zero to position ${lastNonZero}` : 
+                            `Skipping this zero for now`,
+                        array: [...arr],
+                        activeIndices: [i, lastNonZero]
+                    });
+                    
+                    if (arr[i] !== 0) {
+                        arr[lastNonZero] = arr[i];
+                        steps.push({
+                            title: `Moving non-zero element`,
+                            description: `Copied ${arr[i]} from position ${i} to position ${lastNonZero}`,
+                            details: `Non-zero position pointer (lastNonZero) is now ${lastNonZero + 1}`,
+                            array: [...arr],
+                            activeIndices: [i, lastNonZero]
+                        });
+                        
+                        if (lastNonZero !== i) {
+                            arr[i] = 0;
+                            steps.push({
+                                title: `Temporary zero placement`,
+                                description: `Set position ${i} to 0 temporarily`,
+                                details: `We'll fill all zeros at the end`,
+                                array: [...arr],
+                                activeIndices: [i, lastNonZero]
+                            });
+                        }
+                        
+                        lastNonZero++;
+                    }
+                }
+                
+                // Final step: all zeros are already at the end
+                steps.push({
+                    title: "Process Complete",
+                    description: `All non-zero elements have been moved to the front. The remaining positions from ${lastNonZero} to ${arr.length - 1} contain zeros.`,
+                    details: `Final array: [${arr.join(', ')}]`,
+                    array: [...arr],
+                    activeIndices: []
+                });
+                
+                return steps;
+            }
+            
+            function snowballTechnique() {
+                const steps = [];
+                const arr = [...originalArray];
+                let snowballSize = 0;
+                
+                steps.push({
+                    title: "Initial Setup",
+                    description: "Starting the snowball technique. Zeros will form a 'snowball' that grows as we encounter them.",
+                    details: `Array: [${arr.join(', ')}]`,
+                    array: [...arr],
+                    activeIndices: []
+                });
+                
+                for (let i = 0; i < arr.length; i++) {
+                    steps.push({
+                        title: `Processing index ${i}`,
+                        description: `Checking element at position ${i}: ${arr[i]}`,
+                        details: arr[i] === 0 ? 
+                            `Increasing snowball size to ${snowballSize + 1}` : 
+                            (snowballSize > 0 ? 
+                                `Swapping with the first zero in the snowball at position ${i - snowballSize}` : 
+                                `No snowball - leaving in place`),
+                        array: [...arr],
+                        activeIndices: [i]
+                    });
+                    
+                    if (arr[i] === 0) {
+                        snowballSize++;
+                    } else if (snowballSize > 0) {
+                        const swapPos = i - snowballSize;
+                        steps.push({
+                            title: `Swapping non-zero with snowball`,
+                            description: `Swapping ${arr[i]} (position ${i}) with the first zero in the snowball (position ${swapPos})`,
+                            details: `Snowball size remains ${snowballSize}`,
+                            array: [...arr],
+                            activeIndices: [i, swapPos]
+                        });
+                        
+                        // Perform swap
+                        [arr[swapPos], arr[i]] = [arr[i], arr[swapPos]];
+                    }
+                }
+                
+                steps.push({
+                    title: "Process Complete",
+                    description: "All zeros have been moved to the end by swapping non-zero elements with the start of the snowball.",
+                    details: `Final array: [${arr.join(', ')}]`,
+                    array: [...arr],
+                    activeIndices: []
+                });
+                
+                return steps;
+            }
+            
+            function insertionSortLike() {
+                const steps = [];
+                const arr = [...originalArray];
+                
+                steps.push({
+                    title: "Initial Setup",
+                    description: "Starting the insertion-sort like approach. We'll process the array from right to left.",
+                    details: `Array: [${arr.join(', ')}]`,
+                    array: [...arr],
+                    activeIndices: []
+                });
+                
+                for (let i = arr.length - 2; i >= 0; i--) {
+                    steps.push({
+                        title: `Processing index ${i}`,
+                        description: `Checking element at position ${i}: ${arr[i]}`,
+                        details: arr[i] === 0 ? 
+                            `Found a zero. We'll shift non-zeros to the left.` : 
+                            `Not a zero - skipping.`,
+                        array: [...arr],
+                        activeIndices: [i]
+                    });
+                    
+                    if (arr[i] === 0) {
+                        let j = i + 1;
+                        
+                        while (j < arr.length && arr[j] !== 0) {
+                            steps.push({
+                                title: `Shifting non-zero element`,
+                                description: `Moving ${arr[j]} from position ${j} to position ${j-1}`,
+                                details: `Making space to push the zero rightward`,
+                                array: [...arr],
+                                activeIndices: [i, j, j-1]
+                            });
+                            
+                            arr[j-1] = arr[j];
+                            arr[j] = 0;
+                            j++;
+                        }
+                        
+                        steps.push({
+                            title: `Placing zero at final position`,
+                            description: `Placing zero at position ${j-1}`,
+                            details: `This zero has been pushed right as far as possible`,
+                            array: [...arr],
+                            activeIndices: [i, j-1]
+                        });
+                    }
+                }
+                
+                steps.push({
+                    title: "Process Complete",
+                    description: "All zeros have been pushed to the end by shifting non-zero elements to the left.",
+                    details: `Final array: [${arr.join(', ')}]`,
+                    array: [...arr],
+                    activeIndices: []
+                });
+                
+                return steps;
+            }
+            
+            function countingNonZeros() {
+                const steps = [];
+                const arr = [...originalArray];
+                const temp = [...arr];
+                let count = 0;
+                
+                steps.push({
+                    title: "Initial Setup",
+                    description: "Starting counting approach. We'll count non-zero elements and then build a new array.",
+                    details: `Original array: [${arr.join(', ')}]`,
+                    array: [...arr],
+                    activeIndices: []
+                });
+                
+                // Count non-zeros
+                for (let i = 0; i < arr.length; i++) {
+                    if (arr[i] !== 0) {
+                        count++;
+                        steps.push({
+                            title: `Counting non-zero element`,
+                            description: `Found non-zero ${arr[i]} at position ${i}`,
+                            details: `Non-zero count: ${count}`,
+                            array: [...arr],
+                            activeIndices: [i]
+                        });
+                    }
+                }
+                
+                steps.push({
+                    title: "Non-zero Count Complete",
+                    description: `Found ${count} non-zero elements. We'll place these at the beginning of the array.`,
+                    details: `There will be ${arr.length - count} zeros at the end.`,
+                    array: [...arr],
+                    activeIndices: []
+                });
+                
+                // Create new array structure
+                const result = [];
+                let pos = 0;
+                
+                // Add non-zeros
+                for (let i = 0; i < arr.length; i++) {
+                    if (arr[i] !== 0) {
+                        result.push(arr[i]);
+                        steps.push({
+                            title: `Placing non-zero element`,
+                            description: `Adding non-zero ${arr[i]} to position ${pos} in the new array`,
+                            details: `New array: [${result.join(', ')}]`,
+                            array: [...result],
+                            activeIndices: [pos]
+                        });
+                        pos++;
+                    }
+                }
+                
+                // Add zeros at the end
+                for (let i = 0; i < arr.length - count; i++) {
+                    result.push(0);
+                    steps.push({
+                        title: `Adding zeros at the end`,
+                        description: `Adding zero at position ${pos}`,
+                        details: `New array: [${result.join(', ')}]`,
+                        array: [...result],
+                        activeIndices: [pos]
+                    });
+                    pos++;
+                }
+                
+                steps.push({
+                    title: "Process Complete",
+                    description: "The new array has been constructed with all non-zeros first, followed by zeros.",
+                    details: `Final array: [${result.join(', ')}]`,
+                    array: [...result],
+                    activeIndices: []
+                });
+                
+                return steps;
+            }
+        });
+    </script>
+</body>
+</html>
