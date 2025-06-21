@@ -329,6 +329,8 @@
                         <option value="two-pointer">Two-Pointer Approach (O(n))</option>
                         <option value="snowball">Snowball Technique (O(n))</option>
                         <option value="insertion-sort">Insertion-Sort Like (O(n²))</option>
+                        <option value="selection-sort">Selection Sort Variant (Unstable)</option>
+                        <option value="bubble-sort">Bubble Sort Variant (Stable)</option>
                         <option value="counting">Counting Non-Zeros (O(n))</option>
                     </select>
                 </div>
@@ -368,6 +370,26 @@
                 <div class="algorithm-card" data-algo="insertion-sort">
                     <h3>Insertion-Sort Like</h3>
                     <p>Iterates from right to left, shifting non-zeros left to make space for zeros at the end. Similar to insertion sort logic.</p>
+                    <div class="algorithm-stats">
+                        <span class="stat">Time: O(n²)</span>
+                        <span class="stat">Space: O(1)</span>
+                        <span class="stat">Stable: Yes</span>
+                    </div>
+                </div>
+                
+                <div class="algorithm-card" data-algo="selection-sort">
+                    <h3>Selection Sort Variant</h3>
+                    <p>Adapts selection sort by scanning right-to-left to find zeros and swapping them with the last non-zero element.</p>
+                    <div class="algorithm-stats">
+                        <span class="stat">Time: O(n²)</span>
+                        <span class="stat">Space: O(1)</span>
+                        <span class="stat">Stable: No</span>
+                    </div>
+                </div>
+
+                <div class="algorithm-card" data-algo="bubble-sort">
+                    <h3>Bubble Sort Variant</h3>
+                    <p>Adapts bubble sort by bubbling zeros to the right through adjacent swaps.</p>
                     <div class="algorithm-stats">
                         <span class="stat">Time: O(n²)</span>
                         <span class="stat">Space: O(1)</span>
@@ -416,6 +438,20 @@
                             <td>O(1)</td>
                             <td>Yes</td>
                             <td>Educational purposes</td>
+                        </tr>
+                        <tr>
+                            <td>Selection Variant</td>
+                            <td>O(n²)</td>
+                            <td>O(1)</td>
+                            <td>No</td>
+                            <td>Educational</td>
+                        </tr>
+                        <tr>
+                            <td>Bubble Variant</td>
+                            <td>O(n²)</td>
+                            <td>O(1)</td>
+                            <td>Yes</td>
+                            <td>Educational</td>
                         </tr>
                         <tr>
                             <td>Counting</td>
@@ -586,6 +622,12 @@
                         break;
                     case 'insertion-sort':
                         steps = insertionSortLike();
+                        break;
+                    case 'selection-sort':
+                        steps = selectionSortVariant();
+                        break;
+                    case 'bubble-sort':
+                        steps = bubbleSortVariant();
                         break;
                     case 'counting':
                         steps = countingNonZeros();
@@ -841,7 +883,155 @@
                 
                 return steps;
             }
-            
+            function selectionSortVariant() {
+                const steps = [];
+                const arr = [...originalArray];
+                const n = arr.length;
+                
+                steps.push({
+                    title: "Initial Setup",
+                    description: "Starting Selection Sort variant. Scanning from right to left to find zeros.",
+                    array: [...arr],
+                    activeIndices: []
+                });
+                
+                for (let i = n-1; i >= 0; i--) {
+                    steps.push({
+                        title: `Checking index ${i}`,
+                        description: `Element at position ${i}: ${arr[i]}`,
+                        array: [...arr],
+                        activeIndices: [i]
+                    });
+                    
+                    if (arr[i] === 0) {
+                        let swapIndex = -1;
+                        
+                        // Find last non-zero to swap with
+                        for (let j = i-1; j >= 0; j--) {
+                            steps.push({
+                                title: `Searching for non-zero`,
+                                description: `Checking position ${j} for a non-zero to swap`,
+                                array: [...arr],
+                                activeIndices: [i, j]
+                            });
+                            
+                            if (arr[j] !== 0) {
+                                swapIndex = j;
+                                break;
+                            }
+                        }
+                        
+                        if (swapIndex !== -1) {
+                            steps.push({
+                                title: `Swapping zero with non-zero`,
+                                description: `Swapping zero (${i}) with non-zero ${arr[swapIndex]} (${swapIndex})`,
+                                array: [...arr],
+                                activeIndices: [i, swapIndex]
+                            });
+                            
+                            // Perform swap
+                            [arr[i], arr[swapIndex]] = [arr[swapIndex], arr[i]];
+                            
+                            steps.push({
+                                title: `After swap`,
+                                description: `Zero moved to position ${swapIndex}, non-zero to position ${i}`,
+                                array: [...arr],
+                                activeIndices: [i, swapIndex]
+                            });
+                        } else {
+                            steps.push({
+                                title: `No swap needed`,
+                                description: `No non-zero elements found to swap with zero at position ${i}`,
+                                array: [...arr],
+                                activeIndices: [i]
+                            });
+                        }
+                    }
+                }
+                
+                steps.push({
+                    title: "Process Complete",
+                    description: "All zeros have been moved to the end through selection swaps",
+                    array: [...arr],
+                    activeIndices: []
+                });
+                
+                return steps;
+            }
+
+            function bubbleSortVariant() {
+                const steps = [];
+                const arr = [...originalArray];
+                const n = arr.length;
+                
+                steps.push({
+                    title: "Initial Setup",
+                    description: "Starting Bubble Sort variant. Will bubble zeros to the right through adjacent swaps.",
+                    array: [...arr],
+                    activeIndices: []
+                });
+                
+                for (let i = 0; i < n; i++) {
+                    let swapped = false;
+                    
+                    // We'll traverse from left to right
+                    for (let j = 0; j < n - 1 - i; j++) {
+                        steps.push({
+                            title: `Checking positions ${j} and ${j+1}`,
+                            description: `Comparing elements: ${arr[j]} and ${arr[j+1]}`,
+                            array: [...arr],
+                            activeIndices: [j, j+1]
+                        });
+                        
+                        // Swap if left is zero and right is non-zero
+                        if (arr[j] === 0 && arr[j+1] !== 0) {
+                            steps.push({
+                                title: `Swapping adjacent elements`,
+                                description: `Swapping zero (${j}) with non-zero ${arr[j+1]} (${j+1})`,
+                                array: [...arr],
+                                activeIndices: [j, j+1]
+                            });
+                            
+                            // Swap elements
+                            [arr[j], arr[j+1]] = [arr[j+1], arr[j]];
+                            swapped = true;
+                            
+                            steps.push({
+                                title: `After swap`,
+                                description: `Elements swapped: position ${j}=${arr[j]}, position ${j+1}=${arr[j+1]}`,
+                                array: [...arr],
+                                activeIndices: [j, j+1]
+                            });
+                        }
+                    }
+                    
+                    if (!swapped) {
+                        steps.push({
+                            title: `No swaps in pass ${i+1}`,
+                            description: "The array is already in the desired state",
+                            array: [...arr],
+                            activeIndices: []
+                        });
+                        break;
+                    }
+                    
+                    steps.push({
+                        title: `After pass ${i+1}`,
+                        description: `One more zero bubbled to the end`,
+                        array: [...arr],
+                        activeIndices: []
+                    });
+                }
+                
+                steps.push({
+                    title: "Process Complete",
+                    description: "All zeros have been bubbled to the end",
+                    array: [...arr],
+                    activeIndices: []
+                });
+                
+                return steps;
+            }
             function countingNonZeros() {
                 const steps = [];
                 const arr = [...originalArray];
