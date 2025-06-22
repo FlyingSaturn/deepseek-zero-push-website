@@ -887,82 +887,61 @@
                 const steps = [];
                 const arr = [...originalArray];
                 const n = arr.length;
-                let leftPointer = 0; // Points to leftmost non-zero position
-                let rightPointer = n - 1; // Points to current position for swapping zeros
+                let swapPointer = n - 1; // Pointer to the last non-zero position
                 
                 steps.push({
                     title: "Initial Setup",
-                    description: "Starting optimized Selection Sort variant. Scanning from right to left for zeros.",
+                    description: "Starting optimized Selection Sort variant. We'll swap zeros with non-zeros from right to left.",
                     array: [...arr],
                     activeIndices: [],
-                    leftPointer: leftPointer,
-                    rightPointer: rightPointer
+                    swapPointer: swapPointer
                 });
                 
-                // Skip trailing zeros at the end
-                while (rightPointer >= 0 && arr[rightPointer] === 0) {
-                    steps.push({
-                        title: `Skipping trailing zero at ${rightPointer}`,
-                        description: "Position already contains zero - no swap needed",
-                        array: [...arr],
-                        activeIndices: [rightPointer],
-                        leftPointer: leftPointer,
-                        rightPointer: rightPointer
-                    });
-                    rightPointer--;
-                }
-                
-                for (let i = rightPointer; i >= 0; i--) {
+                for (let i = 0; i < n; i++) {
+                    // If we've reached the zero section, break early
+                    if (i >= swapPointer) break;
+                    
                     steps.push({
                         title: `Checking index ${i}`,
                         description: `Element at position ${i}: ${arr[i]}`,
                         array: [...arr],
                         activeIndices: [i],
-                        leftPointer: leftPointer,
-                        rightPointer: rightPointer
+                        swapPointer: swapPointer
                     });
                     
                     if (arr[i] === 0) {
-                        // Find next non-zero from left pointer
-                        while (leftPointer < i && arr[leftPointer] === 0) {
+                        // Find next non-zero from the swap pointer
+                        while (swapPointer > i && arr[swapPointer] === 0) {
                             steps.push({
-                                title: `Moving left pointer`,
-                                description: `Position ${leftPointer} is zero - moving pointer right`,
+                                title: `Moving swap pointer`,
+                                description: `Position ${swapPointer} is zero - moving pointer left`,
                                 array: [...arr],
-                                activeIndices: [i, leftPointer],
-                                leftPointer: leftPointer,
-                                rightPointer: rightPointer
+                                activeIndices: [i, swapPointer],
+                                swapPointer: swapPointer
                             });
-                            leftPointer++;
+                            swapPointer--;
                         }
                         
-                        if (leftPointer < i) {
+                        if (swapPointer > i) {
                             steps.push({
                                 title: `Swapping zero with non-zero`,
-                                description: `Swapping zero (${i}) with non-zero ${arr[leftPointer]} (${leftPointer})`,
+                                description: `Swapping zero (${i}) with non-zero ${arr[swapPointer]} (${swapPointer})`,
                                 array: [...arr],
-                                activeIndices: [i, leftPointer],
-                                leftPointer: leftPointer,
-                                rightPointer: rightPointer
+                                activeIndices: [i, swapPointer],
+                                swapPointer: swapPointer
                             });
                             
                             // Perform swap
-                            [arr[i], arr[leftPointer]] = [arr[leftPointer], arr[i]];
+                            [arr[i], arr[swapPointer]] = [arr[swapPointer], arr[i]];
+                            swapPointer--;
                             
                             steps.push({
                                 title: `After swap`,
-                                description: `Position ${i} now has ${arr[i]}, position ${leftPointer} now has 0`,
+                                description: `Position ${i} now has ${arr[i]}, position ${swapPointer+1} now has 0`,
                                 array: [...arr],
-                                activeIndices: [i, leftPointer],
-                                leftPointer: leftPointer,
-                                rightPointer: rightPointer
+                                activeIndices: [i, swapPointer+1],
+                                swapPointer: swapPointer
                             });
-                            
-                            // Move left pointer right
-                            leftPointer++;
-                            
-                            // Move right pointer left (since we've placed a zero at i)
-                            rightPointer--;
                         }
                     }
                 }
@@ -972,13 +951,12 @@
                     description: "All zeros have been moved to the end through optimized swaps",
                     array: [...arr],
                     activeIndices: [],
-                    leftPointer: leftPointer,
-                    rightPointer: rightPointer
+                    swapPointer: swapPointer
                 });
                 
                 return steps;
             }
-
+}
             function bubbleSortVariant() {
                 const steps = [];
                 const arr = [...originalArray];
