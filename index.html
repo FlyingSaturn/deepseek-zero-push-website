@@ -883,67 +883,64 @@
                 
                 return steps;
             }
-            function selectionSortVariant() {
+            unction selectionSortVariant() {
                 const steps = [];
                 const arr = [...originalArray];
                 const n = arr.length;
+                let swapPointer = n - 1; // Pointer to the last non-zero position
                 
                 steps.push({
                     title: "Initial Setup",
-                    description: "Starting Selection Sort variant. Scanning from right to left to find zeros.",
+                    description: "Starting optimized Selection Sort variant. We'll swap zeros with non-zeros from right to left.",
                     array: [...arr],
-                    activeIndices: []
+                    activeIndices: [],
+                    swapPointer: swapPointer
                 });
                 
-                for (let i = n-1; i >= 0; i--) {
+                for (let i = 0; i < n; i++) {
+                    // If we've reached the zero section, break early
+                    if (i >= swapPointer) break;
+                    
                     steps.push({
                         title: `Checking index ${i}`,
                         description: `Element at position ${i}: ${arr[i]}`,
                         array: [...arr],
-                        activeIndices: [i]
+                        activeIndices: [i],
+                        swapPointer: swapPointer
                     });
                     
                     if (arr[i] === 0) {
-                        let swapIndex = -1;
-                        
-                        // Find last non-zero to swap with
-                        for (let j = i-1; j >= 0; j--) {
+                        // Find next non-zero from the swap pointer
+                        while (swapPointer > i && arr[swapPointer] === 0) {
                             steps.push({
-                                title: `Searching for non-zero`,
-                                description: `Checking position ${j} for a non-zero to swap`,
+                                title: `Moving swap pointer`,
+                                description: `Position ${swapPointer} is zero - moving pointer left`,
                                 array: [...arr],
-                                activeIndices: [i, j]
+                                activeIndices: [i, swapPointer],
+                                swapPointer: swapPointer
                             });
-                            
-                            if (arr[j] !== 0) {
-                                swapIndex = j;
-                                break;
-                            }
+                            swapPointer--;
                         }
                         
-                        if (swapIndex !== -1) {
+                        if (swapPointer > i) {
                             steps.push({
                                 title: `Swapping zero with non-zero`,
-                                description: `Swapping zero (${i}) with non-zero ${arr[swapIndex]} (${swapIndex})`,
+                                description: `Swapping zero (${i}) with non-zero ${arr[swapPointer]} (${swapPointer})`,
                                 array: [...arr],
-                                activeIndices: [i, swapIndex]
+                                activeIndices: [i, swapPointer],
+                                swapPointer: swapPointer
                             });
                             
                             // Perform swap
-                            [arr[i], arr[swapIndex]] = [arr[swapIndex], arr[i]];
+                            [arr[i], arr[swapPointer]] = [arr[swapPointer], arr[i]];
+                            swapPointer--;
                             
                             steps.push({
                                 title: `After swap`,
-                                description: `Zero moved to position ${swapIndex}, non-zero to position ${i}`,
+                                description: `Position ${i} now has ${arr[i]}, position ${swapPointer+1} now has 0`,
                                 array: [...arr],
-                                activeIndices: [i, swapIndex]
-                            });
-                        } else {
-                            steps.push({
-                                title: `No swap needed`,
-                                description: `No non-zero elements found to swap with zero at position ${i}`,
-                                array: [...arr],
-                                activeIndices: [i]
+                                activeIndices: [i, swapPointer+1],
+                                swapPointer: swapPointer
                             });
                         }
                     }
@@ -951,9 +948,10 @@
                 
                 steps.push({
                     title: "Process Complete",
-                    description: "All zeros have been moved to the end through selection swaps",
+                    description: "All zeros have been moved to the end through optimized swaps",
                     array: [...arr],
-                    activeIndices: []
+                    activeIndices: [],
+                    swapPointer: swapPointer
                 });
                 
                 return steps;
