@@ -887,61 +887,82 @@
                 const steps = [];
                 const arr = [...originalArray];
                 const n = arr.length;
-                let swapPointer = n - 1; // Pointer to the last non-zero position
+                let leftPointer = 0; // Points to leftmost non-zero position
+                let rightPointer = n - 1; // Points to current position for swapping zeros
                 
                 steps.push({
                     title: "Initial Setup",
-                    description: "Starting optimized Selection Sort variant. We'll swap zeros with non-zeros from right to left.",
+                    description: "Starting optimized Selection Sort variant. Scanning from right to left for zeros.",
                     array: [...arr],
                     activeIndices: [],
-                    swapPointer: swapPointer
+                    leftPointer: leftPointer,
+                    rightPointer: rightPointer
                 });
                 
-                for (let i = 0; i < n; i++) {
-                    // If we've reached the zero section, break early
-                    if (i >= swapPointer) break;
-                    
+                // Skip trailing zeros at the end
+                while (rightPointer >= 0 && arr[rightPointer] === 0) {
+                    steps.push({
+                        title: `Skipping trailing zero at ${rightPointer}`,
+                        description: "Position already contains zero - no swap needed",
+                        array: [...arr],
+                        activeIndices: [rightPointer],
+                        leftPointer: leftPointer,
+                        rightPointer: rightPointer
+                    });
+                    rightPointer--;
+                }
+                
+                for (let i = rightPointer; i >= 0; i--) {
                     steps.push({
                         title: `Checking index ${i}`,
                         description: `Element at position ${i}: ${arr[i]}`,
                         array: [...arr],
                         activeIndices: [i],
-                        swapPointer: swapPointer
+                        leftPointer: leftPointer,
+                        rightPointer: rightPointer
                     });
                     
                     if (arr[i] === 0) {
-                        // Find next non-zero from the swap pointer
-                        while (swapPointer > i && arr[swapPointer] === 0) {
+                        // Find next non-zero from left pointer
+                        while (leftPointer < i && arr[leftPointer] === 0) {
                             steps.push({
-                                title: `Moving swap pointer`,
-                                description: `Position ${swapPointer} is zero - moving pointer left`,
+                                title: `Moving left pointer`,
+                                description: `Position ${leftPointer} is zero - moving pointer right`,
                                 array: [...arr],
-                                activeIndices: [i, swapPointer],
-                                swapPointer: swapPointer
+                                activeIndices: [i, leftPointer],
+                                leftPointer: leftPointer,
+                                rightPointer: rightPointer
                             });
-                            swapPointer--;
+                            leftPointer++;
                         }
                         
-                        if (swapPointer > i) {
+                        if (leftPointer < i) {
                             steps.push({
                                 title: `Swapping zero with non-zero`,
-                                description: `Swapping zero (${i}) with non-zero ${arr[swapPointer]} (${swapPointer})`,
+                                description: `Swapping zero (${i}) with non-zero ${arr[leftPointer]} (${leftPointer})`,
                                 array: [...arr],
-                                activeIndices: [i, swapPointer],
-                                swapPointer: swapPointer
+                                activeIndices: [i, leftPointer],
+                                leftPointer: leftPointer,
+                                rightPointer: rightPointer
                             });
                             
                             // Perform swap
-                            [arr[i], arr[swapPointer]] = [arr[swapPointer], arr[i]];
-                            swapPointer--;
+                            [arr[i], arr[leftPointer]] = [arr[leftPointer], arr[i]];
                             
                             steps.push({
                                 title: `After swap`,
-                                description: `Position ${i} now has ${arr[i]}, position ${swapPointer+1} now has 0`,
+                                description: `Position ${i} now has ${arr[i]}, position ${leftPointer} now has 0`,
                                 array: [...arr],
-                                activeIndices: [i, swapPointer+1],
-                                swapPointer: swapPointer
+                                activeIndices: [i, leftPointer],
+                                leftPointer: leftPointer,
+                                rightPointer: rightPointer
                             });
+                            
+                            // Move left pointer right
+                            leftPointer++;
+                            
+                            // Move right pointer left (since we've placed a zero at i)
+                            rightPointer--;
                         }
                     }
                 }
@@ -951,7 +972,8 @@
                     description: "All zeros have been moved to the end through optimized swaps",
                     array: [...arr],
                     activeIndices: [],
-                    swapPointer: swapPointer
+                    leftPointer: leftPointer,
+                    rightPointer: rightPointer
                 });
                 
                 return steps;
